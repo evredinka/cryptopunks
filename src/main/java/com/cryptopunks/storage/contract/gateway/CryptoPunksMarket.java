@@ -1,4 +1,4 @@
-package com.cryptopunks.storage.contract;
+package com.cryptopunks.storage.contract.gateway;
 
 import io.reactivex.Flowable;
 import java.math.BigInteger;

@@ -1,7 +1,7 @@
 package com.cryptopunks.web;
 
-import com.cryptopunks.model.Offer;
-import com.cryptopunks.storage.OfferRepository;
+import com.cryptopunks.storage.contract.gateway.CryptoPunksMarketGateway;
+import com.cryptopunks.storage.contract.gateway.RawOffer;
 import com.cryptopunks.web.dto.ErrorDTO;
 import com.cryptopunks.web.dto.PunkDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,10 +12,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.web3j.tuples.generated.Tuple5;
 
 import java.math.BigInteger;
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
@@ -33,17 +33,19 @@ public class CryptoPunksControllerIntegrationTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private OfferRepository offerRepository;
+    private CryptoPunksMarketGateway cryptoPunksMarketGateway;
 
     @Test
     public void shouldReturnPunkWithOffer() {
-        Offer offer = Offer.builder()
-                .seller("seller")
-                .onlySellTo("onlySellTo")
-                .minValueInWei(BigInteger.valueOf(12_300))
-                .build();
-        when(offerRepository.getActiveOfferByPunkId(1234))
-                .thenReturn(Optional.of(offer));
+        boolean isForSale = true;
+        BigInteger punkIndex = BigInteger.valueOf(1234);
+        String seller = "seller";
+        BigInteger minValue = BigInteger.valueOf(12_300);
+        String onlySellTo = "onlySellTo";
+
+        var data = new Tuple5<>(isForSale, punkIndex, seller, minValue, onlySellTo);
+        when(cryptoPunksMarketGateway.punksOfferedForSale(1234))
+                .thenReturn(RawOffer.builder().data(data).build());
 
         PunkDTO punk = restTemplate.getForObject("/punks/1234", PunkDTO.class);
 
@@ -57,7 +59,15 @@ public class CryptoPunksControllerIntegrationTest {
 
     @Test
     public void shouldReturnPunkWithoutOffer() {
-        when(offerRepository.getActiveOfferByPunkId(1234)).thenReturn(Optional.empty());
+        boolean isForSale = false;
+        BigInteger punkIndex = BigInteger.valueOf(1234);
+        String seller = "seller";
+        BigInteger minValue = BigInteger.valueOf(12_300);
+        String onlySellTo = "onlySellTo";
+
+        var data = new Tuple5<>(isForSale, punkIndex, seller, minValue, onlySellTo);
+        when(cryptoPunksMarketGateway.punksOfferedForSale(1234))
+                .thenReturn(RawOffer.builder().data(data).build());
 
         PunkDTO punk = restTemplate.getForObject("/punks/1234", PunkDTO.class);
 
