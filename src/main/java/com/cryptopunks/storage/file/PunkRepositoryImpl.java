@@ -7,19 +7,21 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+
 @Component
 class PunkRepositoryImpl implements CryptoPunkRepository {
 
-    private final Map<String, Punk> punks;
+    private final Map<Integer, Punk> punks;
 
     PunkRepositoryImpl(PunkPopulator punkPopulator) {
-        this.punks = punkPopulator.loadPunks();
+        this.punks = punkPopulator.loadPunks().stream().collect(toMap(Punk::getId, identity()));
     }
 
     @Override
     public Optional<Punk> getPunk(int punkId) {
-        Punk maybePunk = punks.get(String.valueOf(punkId));
-        return Optional.ofNullable(maybePunk).map(punk -> punk.setId(punkId));
+        return Optional.ofNullable(punks.get(punkId));
     }
 
 }
