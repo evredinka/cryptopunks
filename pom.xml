@@ -22,6 +22,7 @@
     <lombok.version>1.18.10</lombok.version>
     <mockito.version>1.10.19</mockito.version>
     <mockito-core.version>2.23.4</mockito-core.version>
+    <web3j.version>4.5.5</web3j.version>
   </properties>
 
   <dependencies>
@@ -34,6 +35,11 @@
       <artifactId>lombok</artifactId>
       <version>${lombok.version}</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.web3j</groupId>
+      <artifactId>core</artifactId>
+      <version>${web3j.version}</version>
     </dependency>
 
     <dependency>

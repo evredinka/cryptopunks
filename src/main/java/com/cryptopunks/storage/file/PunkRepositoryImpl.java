@@ -1,6 +1,7 @@
-package com.cryptopunks.storage;
+package com.cryptopunks.storage.file;
 
 import com.cryptopunks.model.Punk;
+import com.cryptopunks.storage.CryptoPunkRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;

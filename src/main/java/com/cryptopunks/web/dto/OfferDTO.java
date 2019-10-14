@@ -6,18 +6,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.math.BigInteger;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PunkDTO {
+public class OfferDTO {
 
-    private int id;
-    private String gender;
-    private List<String> accessories;
-    private OfferDTO activeOffer;
+    private String seller;
+    private String onlySellTo;
+    private BigInteger minValueInWei;
 
 }

@@ -1,4 +1,4 @@
-package com.cryptopunks.storage;
+package com.cryptopunks.storage.file;
 
 import com.cryptopunks.model.Punk;
 import com.fasterxml.jackson.core.type.TypeReference;

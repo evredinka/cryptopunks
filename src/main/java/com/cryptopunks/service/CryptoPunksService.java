@@ -1,13 +1,17 @@
 package com.cryptopunks.service;
 
+import com.cryptopunks.model.Offer;
 import com.cryptopunks.model.Punk;
 import com.cryptopunks.storage.CryptoPunkRepository;
+import com.cryptopunks.storage.OfferRepository;
+import com.cryptopunks.web.DTOMapper;
 import com.cryptopunks.web.dto.PunkDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Collections.singletonList;
 
@@ -17,6 +21,8 @@ import static java.util.Collections.singletonList;
 public class CryptoPunksService {
 
     private final CryptoPunkRepository punkRepository;
+    private final OfferRepository offerRepository;
+    private final DTOMapper mapper;
 
     public List<PunkDTO> getPunks(List<String> fields, Boolean activeOffer) {
         //todo @evgeniia implement me!
@@ -28,11 +34,10 @@ public class CryptoPunksService {
                 .orElseThrow(() -> new EntityNotFoundException("No punk found for id " + id));
         log.debug("Received punk {}", punk);
 
-        return PunkDTO.builder()
-                .id(punk.getId())
-                .gender(punk.getGender())
-                .accessories(punk.getAccessories())
-                .build();
+        Optional<Offer> offer = offerRepository.getActiveOfferByPunkId(id);
+        log.debug("Received offer {}", offer);
+
+        return mapper.map(punk, offer.orElse(null));
     }
 
 }
