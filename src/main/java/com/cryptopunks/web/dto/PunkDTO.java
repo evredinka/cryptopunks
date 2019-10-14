@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -14,5 +16,7 @@ import lombok.NoArgsConstructor;
 public class PunkDTO {
 
     private int id;
+    private String gender;
+    private List<String> accessories;
 
 }

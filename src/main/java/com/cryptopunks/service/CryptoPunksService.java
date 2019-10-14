@@ -28,7 +28,11 @@ public class CryptoPunksService {
                 .orElseThrow(() -> new EntityNotFoundException("No punk found for id " + id));
         log.debug("Received punk {}", punk);
 
-        return PunkDTO.builder().id(punk.getId()).build();
+        return PunkDTO.builder()
+                .id(punk.getId())
+                .gender(punk.getGender())
+                .accessories(punk.getAccessories())
+                .build();
     }
 
 }
