@@ -11,11 +11,9 @@ import java.math.BigInteger;
 @Builder
 @NonFinal
 @AllArgsConstructor
-public class Offer {
+public class HighestBid {
 
-    private final String seller;
-    private final String onlySellTo;
-    private final BigInteger minValueInWei;
-    private final HighestBid highestBid;
+    private final String bidder;
+    private final BigInteger value;
 
 }

@@ -13,11 +13,9 @@ import java.math.BigInteger;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class OfferDTO {
+public class HighestBidDTO {
 
-    private String seller;
-    private String onlySellTo;
-    private BigInteger minValueInWei;
-    private HighestBidDTO highestBid;
+    private String bidder;
+    private BigInteger value;
 
 }

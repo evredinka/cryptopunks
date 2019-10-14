@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.NonFinal;
-import org.web3j.tuples.generated.Tuple5;
+import org.web3j.tuples.generated.Tuple4;
 
 import java.math.BigInteger;
 
@@ -12,24 +12,19 @@ import java.math.BigInteger;
 @Builder
 @NonFinal
 @AllArgsConstructor
-public class RawOffer {
+public class RawBid {
 
-    private final Tuple5<Boolean, BigInteger, String, BigInteger, String> data;
+    private final Tuple4<Boolean, BigInteger, String, BigInteger> data;
 
-    public boolean isForSale() {
+    public boolean hasBid() {
         return data.component1();
     }
 
-    public String getSeller() {
+    public String getBidder() {
         return data.component3();
     }
 
-    public String getOnlySellTo() {
-        return data.component5();
-    }
-
-    public BigInteger getMinValueInWei() {
+    public BigInteger getValue() {
         return data.component4();
     }
-
 }

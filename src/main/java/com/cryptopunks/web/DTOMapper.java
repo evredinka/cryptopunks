@@ -1,7 +1,9 @@
 package com.cryptopunks.web;
 
+import com.cryptopunks.model.HighestBid;
 import com.cryptopunks.model.Offer;
 import com.cryptopunks.model.Punk;
+import com.cryptopunks.web.dto.HighestBidDTO;
 import com.cryptopunks.web.dto.OfferDTO;
 import com.cryptopunks.web.dto.PunkDTO;
 import org.springframework.lang.Nullable;
@@ -30,6 +32,18 @@ public class DTOMapper {
                 .seller(offer.getSeller())
                 .onlySellTo(offer.getOnlySellTo())
                 .minValueInWei(offer.getMinValueInWei())
+                .highestBid(buildHighestBidDTO(offer.getHighestBid()))
+                .build();
+    }
+
+    @Nullable
+    private HighestBidDTO buildHighestBidDTO(@Nullable HighestBid highestBid) {
+        if (isNull(highestBid)) {
+            return null;
+        }
+        return HighestBidDTO.builder()
+                .bidder(highestBid.getBidder())
+                .value(highestBid.getValue())
                 .build();
     }
 

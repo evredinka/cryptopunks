@@ -3,6 +3,7 @@ package com.cryptopunks.storage.contract;
 import com.cryptopunks.model.Offer;
 import com.cryptopunks.storage.OfferRepository;
 import com.cryptopunks.storage.contract.gateway.CryptoPunksMarketGateway;
+import com.cryptopunks.storage.contract.gateway.RawBid;
 import com.cryptopunks.storage.contract.gateway.RawOffer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,7 +20,14 @@ class EthereumRepository implements OfferRepository {
     @Override
     public Optional<Offer> getActiveOfferByPunkId(int punkId) {
         RawOffer rawOffer = cryptoPunksMarketGateway.punksOfferedForSale(punkId);
-        return rawOffer.isForSale() ? Optional.of(dataMapper.map(rawOffer)) : Optional.empty();
+        if (!rawOffer.isForSale()) {
+            return Optional.empty();
+        }
+        RawBid rawBid = cryptoPunksMarketGateway.punkBids(punkId);
+        if (!rawBid.hasBid()) {
+            return Optional.of(dataMapper.map(rawOffer));
+        }
+        return Optional.of(dataMapper.map(rawOffer, rawBid));
     }
 
 }
