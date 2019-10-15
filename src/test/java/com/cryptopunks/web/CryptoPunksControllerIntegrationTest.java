@@ -82,10 +82,24 @@ public class CryptoPunksControllerIntegrationTest {
     }
 
     @Test
-    public void shouldReturnErrorIfPunkNotFound() {
-        ErrorDTO error = restTemplate.getForObject("/punks/10", ErrorDTO.class);
+    public void shouldReturnPunkIfIdInRangeButNoPunkData() {
+        RawOffer rawOffer = mock(RawOffer.class);
+        when(rawOffer.isForSale()).thenReturn(false);
+        when(cryptoPunksMarketGateway.punksOfferedForSale(10)).thenReturn(rawOffer);
 
-        assertThat(error.getMessage(), is("No punk found for id 10"));
+        PunkDTO punk = restTemplate.getForObject("/punks/10", PunkDTO.class);
+
+        assertThat(punk.getId(), is(10));
+        assertThat(punk.getGender(), is(nullValue()));
+        assertThat(punk.getAccessories(), is(nullValue()));
+        assertThat(punk.getActiveOffer(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldReturnErrorIfPunkNotFound() {
+        ErrorDTO error = restTemplate.getForObject("/punks/11111", ErrorDTO.class);
+
+        assertThat(error.getMessage(), is("No punk found for id 11111"));
     }
 
     @Test

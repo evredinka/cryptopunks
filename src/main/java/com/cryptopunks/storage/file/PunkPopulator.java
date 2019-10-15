@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -18,9 +19,11 @@ import static java.util.stream.Collectors.toList;
 class PunkPopulator {
 
     private final ObjectMapper mapper;
+    private final String punkDataPath;
 
-    PunkPopulator(ObjectMapper mapper) {
+    PunkPopulator(ObjectMapper mapper, @Value("${cryptopunks.punkDataPath}") String punkDataPath) {
         this.mapper = mapper;
+        this.punkDataPath = punkDataPath;
     }
 
     List<Punk> loadPunks() {
@@ -32,7 +35,7 @@ class PunkPopulator {
     }
 
     private List<Punk> readFromFile() throws IOException {
-        Map<Integer, PunkBuilder> punks = mapper.readValue(this.getClass().getResourceAsStream("/punkDetails.json"),
+        Map<Integer, PunkBuilder> punks = mapper.readValue(this.getClass().getResourceAsStream(punkDataPath),
                 new TypeReference<Map<Integer, PunkBuilder>>() {});
         return punks.entrySet().stream()
                 .map((e) -> e.getValue().build(e.getKey())).collect(toList());

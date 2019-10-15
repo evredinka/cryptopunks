@@ -14,14 +14,20 @@ import static java.util.stream.Collectors.toMap;
 class PunkRepositoryImpl implements CryptoPunkRepository {
 
     private final Map<Integer, Punk> punks;
+    private final PunkRangeConfig punkRangeConfig;
 
-    PunkRepositoryImpl(PunkPopulator punkPopulator) {
+    PunkRepositoryImpl(PunkPopulator punkPopulator,
+                       PunkRangeConfig punkRangeConfig) {
         this.punks = punkPopulator.loadPunks().stream().collect(toMap(Punk::getId, identity()));
+        this.punkRangeConfig = punkRangeConfig;
     }
 
     @Override
     public Optional<Punk> getPunk(int punkId) {
-        return Optional.ofNullable(punks.get(punkId));
+        if (punkRangeConfig.isInRange(punkId)) {
+            return Optional.of(punks.getOrDefault(punkId, Punk.builder().id(punkId).build()));
+        }
+        return Optional.empty();
     }
 
 }
