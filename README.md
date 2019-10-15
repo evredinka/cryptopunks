@@ -38,3 +38,24 @@
 ```
 #### Limitations:
 `GET /punks` currently supports only `fields=id` and `activeOffer=true`
+
+# Project build
+#### Requirements:
+- OpenJDK 12
+- Apache Maven 3.6.1
+
+#### Project build:
+```shell script
+>> mvn clean test package
+```
+
+#### Project run:
+```shell script
+>> java -jar target/testapp-0.1.0-SNAPSHOT.jar
+```
+
+#### Http request examples:
+```shell script
+>> curl "localhost:8080/punks/1"
+>> curl "localhost:8080/punks?fields=id&activeOffer=true"
+```
