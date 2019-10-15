@@ -22,11 +22,14 @@ public class CryptoPunksService {
 
     private final CryptoPunkRepository punkRepository;
     private final OfferRepository offerRepository;
-    private final DTOMapper mapper;
+    private final DTOMapper dtoMapper;
 
     public List<PunkDTO> getPunks(List<String> fields, Boolean activeOffer) {
-        //todo @evgeniia implement me!
-        return singletonList(PunkDTO.builder().id(1234).build());
+        throwIfUnsupported(fields, activeOffer);
+
+        List<Integer> offeredPunkIds = offerRepository.getOfferedPunkIds();
+        log.debug("Received {} punk ids with active offers", offeredPunkIds.size());
+        return dtoMapper.toDTO(offeredPunkIds);
     }
 
     public PunkDTO getPunk(int id) {
@@ -37,7 +40,16 @@ public class CryptoPunksService {
         Optional<Offer> offer = offerRepository.getActiveOfferByPunkId(id);
         log.debug("Received offer {}", offer);
 
-        return mapper.map(punk, offer.orElse(null));
+        return dtoMapper.toDTO(punk, offer.orElse(null));
+    }
+
+    private void throwIfUnsupported(List<String> fields, Boolean activeOffer) {
+        if (fields == null || !fields.equals(singletonList("id"))) {
+            throw new UnsupportedOperationException("Only fields=id is supported");
+        }
+        if (!Boolean.TRUE.equals(activeOffer)) {
+            throw new UnsupportedOperationException("Only activeOffer=true is supported");
+        }
     }
 
 }

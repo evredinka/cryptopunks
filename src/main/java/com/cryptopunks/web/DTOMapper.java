@@ -9,12 +9,21 @@ import com.cryptopunks.web.dto.PunkDTO;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 import static java.util.Objects.isNull;
+import static java.util.stream.Collectors.toList;
 
 @Component
 public class DTOMapper {
 
-    public PunkDTO map(Punk punk, @Nullable Offer offer) {
+    public List<PunkDTO> toDTO(List<Integer> punkIds) {
+        return punkIds.stream()
+                .map(id -> PunkDTO.builder().id(id).build())
+                .collect(toList());
+    }
+
+    public PunkDTO toDTO(Punk punk, @Nullable Offer offer) {
         return PunkDTO.builder()
                 .id(punk.getId())
                 .gender(punk.getGender())

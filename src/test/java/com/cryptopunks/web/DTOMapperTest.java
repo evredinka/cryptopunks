@@ -11,10 +11,12 @@ import org.junit.Test;
 import java.math.BigInteger;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
 public class DTOMapperTest {
 
@@ -23,7 +25,7 @@ public class DTOMapperTest {
         Punk punk = newPunk(1234, "Female", singletonList("Wild Hair"));
         Offer offer = null;
 
-        PunkDTO dto = new DTOMapper().map(punk, offer);
+        PunkDTO dto = new DTOMapper().toDTO(punk, offer);
 
         assertThat(dto.getId(), is(1234));
         assertThat(dto.getGender(), is("Female"));
@@ -36,7 +38,7 @@ public class DTOMapperTest {
         Punk punk = newPunk(1234, "Female", singletonList("Wild Hair"));
         Offer offer = newOffer("seller", "onlySellTo", 15_000);
 
-        OfferDTO dto = new DTOMapper().map(punk, offer).getActiveOffer();
+        OfferDTO dto = new DTOMapper().toDTO(punk, offer).getActiveOffer();
 
         assertThat(dto.getSeller(), is("seller"));
         assertThat(dto.getOnlySellTo(), is("onlySellTo"));
@@ -53,10 +55,19 @@ public class DTOMapperTest {
                 .build();
         Offer offer = newOffer("seller", "onlySellTo", 15_000, highestBid);
 
-        HighestBidDTO dto = new DTOMapper().map(punk, offer).getActiveOffer().getHighestBid();
+        HighestBidDTO dto = new DTOMapper().toDTO(punk, offer).getActiveOffer().getHighestBid();
 
         assertThat(dto.getBidder(), is("bidder"));
         assertThat(dto.getValue(), is(BigInteger.valueOf(15_000)));
+    }
+
+    @Test
+    public void shouldMapCollectionOfPunkIds() {
+        List<PunkDTO> dtos = new DTOMapper().toDTO(asList(12, 13));
+
+        assertThat(dtos, contains(
+                PunkDTO.builder().id(12).build(),
+                PunkDTO.builder().id(13).build()));
     }
 
     private Punk newPunk(int id, String gender, List<String> accessories) {

@@ -21,7 +21,7 @@ public class Web3Configuration {
         Web3j web3 = Web3j.build(new HttpService(infuraAddress));
         TransactionManager txManager = new ReadonlyTransactionManager(web3, contractAddress);
         DefaultGasProvider gasProvider = new DefaultGasProvider();
-        return new CryptoPunksMarketGateway(CryptoPunksMarket.load(contractAddress, web3, txManager, gasProvider));
+        return new CryptoPunksMarketGateway(web3, CryptoPunksMarket.load(contractAddress, web3, txManager, gasProvider));
     }
 
 }

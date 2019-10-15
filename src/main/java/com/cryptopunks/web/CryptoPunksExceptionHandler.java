@@ -1,6 +1,7 @@
 package com.cryptopunks.web;
 
 import com.cryptopunks.service.EntityNotFoundException;
+import com.cryptopunks.service.UnsupportedOperationException;
 import com.cryptopunks.web.dto.ErrorDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -16,6 +17,13 @@ public class CryptoPunksExceptionHandler extends ResponseEntityExceptionHandler 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(EntityNotFoundException.class)
     public final ErrorDTO handleNotFoundException(EntityNotFoundException ex) {
+        return new ErrorDTO(ex.getMessage());
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public final ErrorDTO handleNotFoundException(UnsupportedOperationException ex) {
         return new ErrorDTO(ex.getMessage());
     }
 

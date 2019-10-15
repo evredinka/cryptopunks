@@ -8,6 +8,7 @@ import com.cryptopunks.storage.contract.gateway.RawOffer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -15,7 +16,13 @@ import java.util.Optional;
 class EthereumRepository implements OfferRepository {
 
     private final CryptoPunksMarketGateway cryptoPunksMarketGateway;
+    private final EthereumEventRepository eventRepository;
     private final EthereumDataMapper dataMapper;
+
+    @Override
+    public List<Integer> getOfferedPunkIds() {
+        return eventRepository.getOfferIds();
+    }
 
     @Override
     public Optional<Offer> getActiveOfferByPunkId(int punkId) {

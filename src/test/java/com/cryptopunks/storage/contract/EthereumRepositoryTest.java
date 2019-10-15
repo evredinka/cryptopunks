@@ -24,7 +24,7 @@ public class EthereumRepositoryTest {
         when(rawBid.hasBid()).thenReturn(true);
         when(gateway.punkBids(1234)).thenReturn(rawBid);
 
-        new EthereumRepository(gateway, dataMapper).getActiveOfferByPunkId(1234);
+        new EthereumRepository(gateway, mock(EthereumEventRepository.class), dataMapper).getActiveOfferByPunkId(1234);
 
         verify(dataMapper).map(rawOffer, rawBid);
     }
@@ -38,7 +38,7 @@ public class EthereumRepositoryTest {
         when(rawOffer.isForSale()).thenReturn(false);
         when(gateway.punksOfferedForSale(1234)).thenReturn(rawOffer);
 
-        new EthereumRepository(gateway, dataMapper).getActiveOfferByPunkId(1234);
+        new EthereumRepository(gateway, mock(EthereumEventRepository.class), dataMapper).getActiveOfferByPunkId(1234);
 
         verifyZeroInteractions(dataMapper);
     }
@@ -57,7 +57,7 @@ public class EthereumRepositoryTest {
         when(rawBid.hasBid()).thenReturn(false);
         when(gateway.punkBids(1234)).thenReturn(rawBid);
 
-        new EthereumRepository(gateway, dataMapper).getActiveOfferByPunkId(1234);
+        new EthereumRepository(gateway, mock(EthereumEventRepository.class), dataMapper).getActiveOfferByPunkId(1234);
 
         verify(dataMapper).map(rawOffer);
     }

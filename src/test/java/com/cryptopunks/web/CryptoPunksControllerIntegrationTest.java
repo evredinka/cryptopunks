@@ -7,22 +7,27 @@ import com.cryptopunks.web.dto.ErrorDTO;
 import com.cryptopunks.web.dto.HighestBidDTO;
 import com.cryptopunks.web.dto.OfferDTO;
 import com.cryptopunks.web.dto.PunkDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigInteger;
 import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,8 +37,6 @@ public class CryptoPunksControllerIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @MockBean
     private CryptoPunksMarketGateway cryptoPunksMarketGateway;
@@ -44,8 +47,12 @@ public class CryptoPunksControllerIntegrationTest {
         when(rawOffer.isForSale()).thenReturn(false);
         when(cryptoPunksMarketGateway.punksOfferedForSale(1234)).thenReturn(rawOffer);
 
-        PunkDTO punk = restTemplate.getForObject("/punks/1234", PunkDTO.class);
+        ResponseEntity<PunkDTO> response = httpGet("/punks/1234", PunkDTO.class);
 
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+
+        PunkDTO punk = response.getBody();
+        assertThat(punk, is(notNullValue()));
         assertThat(punk.getId(), is(1234));
         assertThat(punk.getGender(), is("Female"));
         assertThat(punk.getAccessories(), is(singletonList("Wild Hair")));
@@ -58,8 +65,12 @@ public class CryptoPunksControllerIntegrationTest {
         when(cryptoPunksMarketGateway.punksOfferedForSale(1234)).thenReturn(rawOffer);
         when(cryptoPunksMarketGateway.punkBids(1234)).thenReturn(mock(RawBid.class));
 
-        OfferDTO offer = restTemplate.getForObject("/punks/1234", PunkDTO.class).getActiveOffer();
+        ResponseEntity<PunkDTO> response = httpGet("/punks/1234", PunkDTO.class);
 
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody(), is(notNullValue()));
+
+        OfferDTO offer = response.getBody().getActiveOffer();
         assertThat(offer.getSeller(), is("seller"));
         assertThat(offer.getOnlySellTo(), is("onlySellTo"));
         assertThat(offer.getMinValueInWei(), is(BigInteger.valueOf(12_300)));
@@ -74,9 +85,11 @@ public class CryptoPunksControllerIntegrationTest {
         RawBid rawBid = mockActiveBid("bidder", 14_000);
         when(cryptoPunksMarketGateway.punkBids(1234)).thenReturn(rawBid);
 
-        PunkDTO punk = restTemplate.getForObject("/punks/1234", PunkDTO.class);
+        ResponseEntity<PunkDTO> response = httpGet("/punks/1234", PunkDTO.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody(), is(notNullValue()));
 
-        HighestBidDTO highestBid = punk.getActiveOffer().getHighestBid();
+        HighestBidDTO highestBid = response.getBody().getActiveOffer().getHighestBid();
         assertThat(highestBid.getBidder(), is("bidder"));
         assertThat(highestBid.getValue(), is(BigInteger.valueOf(14_000)));
     }
@@ -87,8 +100,11 @@ public class CryptoPunksControllerIntegrationTest {
         when(rawOffer.isForSale()).thenReturn(false);
         when(cryptoPunksMarketGateway.punksOfferedForSale(10)).thenReturn(rawOffer);
 
-        PunkDTO punk = restTemplate.getForObject("/punks/10", PunkDTO.class);
+        ResponseEntity<PunkDTO> response = httpGet("/punks/10", PunkDTO.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody(), is(notNullValue()));
 
+        PunkDTO punk = response.getBody();
         assertThat(punk.getId(), is(10));
         assertThat(punk.getGender(), is(nullValue()));
         assertThat(punk.getAccessories(), is(nullValue()));
@@ -96,19 +112,43 @@ public class CryptoPunksControllerIntegrationTest {
     }
 
     @Test
-    public void shouldReturnErrorIfPunkNotFound() {
-        ErrorDTO error = restTemplate.getForObject("/punks/11111", ErrorDTO.class);
+    public void shouldReturnNotFoundIfPunkNotFound() {
+        ResponseEntity<ErrorDTO> response = httpGet("/punks/11111", ErrorDTO.class);
 
-        assertThat(error.getMessage(), is("No punk found for id 11111"));
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        assertThat(response.getBody(), is(notNullValue()));
+        assertThat(response.getBody().getMessage(), is("No punk found for id 11111"));
     }
 
     @Test
-    public void shouldReturnListOfPunksWithId() {
-        List punkIds = restTemplate.getForObject("/punks?fields=id,activeOffer=true", List.class);
+    public void shouldReturnListOfOfferedPunksWithId() {
+        when(cryptoPunksMarketGateway.requestPunkOfferedEvents())
+                .thenReturn(completedFuture(singletonList(new CryptoPunksMarketGateway.EthEvent(1234, 87563412))));
+        when(cryptoPunksMarketGateway.requestPunkNoLongerForSaleEvents()).thenReturn(completedFuture(emptyList()));
+        when(cryptoPunksMarketGateway.requestPunkBoughtEvents()).thenReturn(completedFuture(emptyList()));
 
-        assertThat(punkIds.size(), is(1));
-        PunkDTO punk = getNextPunk(punkIds);
-        assertThat(punk.getId(), is(1234));
+        ResponseEntity<List<PunkDTO>> response = httpGet("/punks?fields=id&activeOffer=true", new ParameterizedTypeReference<>() {});
+
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody(), contains(PunkDTO.builder().id(1234).build()));
+    }
+
+    @Test
+    public void shouldReturnErrorIfActiveOfferFalse() {
+        ResponseEntity<ErrorDTO> response = httpGet("/punks?fields=id&activeOffer=false", ErrorDTO.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.UNPROCESSABLE_ENTITY));
+        assertThat(response.getBody(), is(notNullValue()));
+        assertThat(response.getBody().getMessage(), is("Only activeOffer=true is supported"));
+    }
+
+    @Test
+    public void shouldReturnErrorIfGenderFieldRequested() {
+        ResponseEntity<ErrorDTO> response = httpGet("/punks?fields=gender&activeOffer=true", ErrorDTO.class);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.UNPROCESSABLE_ENTITY));
+        assertThat(response.getBody(), is(notNullValue()));
+        assertThat(response.getBody().getMessage(), is("Only fields=id is supported"));
     }
 
     private RawBid mockActiveBid(String bidder, int value) {
@@ -128,9 +168,12 @@ public class CryptoPunksControllerIntegrationTest {
         return rawOffer;
     }
 
-    private PunkDTO getNextPunk(List punkIds) {
-        Object next = punkIds.iterator().next();
-        return objectMapper.convertValue(next, PunkDTO.class);
+    private <T> ResponseEntity<T> httpGet(String url, ParameterizedTypeReference<T> responseType) {
+        return restTemplate.exchange(url, HttpMethod.GET, null, responseType);
+    }
+
+    private <T> ResponseEntity<T> httpGet(String s, Class<T> responseType) {
+        return restTemplate.exchange(s, HttpMethod.GET, null, responseType);
     }
 
 }
